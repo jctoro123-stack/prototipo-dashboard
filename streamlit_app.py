@@ -92,10 +92,7 @@ with col2:
             "imc": [imc]
 })
 
-datos = datos[scaler.feature_names_in_]
-datos_scaled = scaler.transform(datos)
-
-prob = modelo.predict_proba(datos_scaled)[0][1]
+prob = modelo.predict_proba(datos)[0][1]
 riesgo = round(prob * 100, 2)
 
 if riesgo >= 70:
