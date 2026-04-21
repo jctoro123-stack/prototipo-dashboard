@@ -77,28 +77,25 @@ with col2:
 
     if predecir:
         bmi = peso / ((altura / 100) ** 2)
+        datos = pd.DataFrame({
+            "age": [edad],
+            "gender": [genero],
+            "height": [altura],
+            "weight": [peso],
+            "ap_hi": [ap_hi],
+            "ap_lo": [ap_lo],
+            "cholesterol": [colesterol],
+            "gluc": [glucosa],
+            "smoke": [fuma],
+            "alco": [alcohol],
+            "active": [actividad],
+            "bmi": [bmi]
+})
 
-        datos = pd.DataFrame([[
-            edad,
-            genero,
-            altura,
-            peso,
-            ap_hi,
-            ap_lo,
-            colesterol,
-            glucosa,
-            fuma,
-            alcohol,
-            actividad,
-            bmi
-        ]], columns=[
-            "age", "gender", "height", "weight",
-            "ap_hi", "ap_lo", "cholesterol",
-            "gluc", "smoke", "alco", "active",
-            "bmi"
-        ])
+# Reordenar según el scaler
+datos = datos[scaler.feature_names_in_]
 
-        datos_scaled = scaler.transform(datos)
+datos_scaled = scaler.transform(datos)
 
         prob = modelo.predict_proba(datos_scaled)[0][1]
         riesgo = round(prob * 100, 2)
