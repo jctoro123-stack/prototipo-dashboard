@@ -82,7 +82,7 @@ st.markdown("""
 # ---------------- ENCABEZADO ----------------
 st.markdown("""
 <div class='main-title'>
-    <h1 style='margin:0;'>🫀 Dashboard Clínico Predictivo</h1>
+    <h1 style='margin:0;'>🫀 Sistema Predictivo de Enfermedades Crónica</h1>
     <p style='margin:0.5rem 0 0 0; font-size: 18px;'>Predicción de riesgo cardiovascular con XGBoost</p>
 </div>
 """, unsafe_allow_html=True)
@@ -99,17 +99,33 @@ with left_col:
         edad = st.number_input("Edad", 1, 100, 58)
         altura = st.number_input("Altura (cm)", 100, 250, 170)
         ap_hi = st.number_input("Presión sistólica", 80, 250, 150)
-        colesterol = st.selectbox("Colesterol", [1, 2, 3])
-        fuma = st.selectbox("Fumador", [0, 1])
+        colesterol = st.selectbox(
+        "Nivel de Colesterol",
+        [1, 2, 3],
+        format_func=lambda x: {
+            1: "Normal",
+            2: "Por encima de lo normal",
+            3: "Muy alto"
+        }[x]
+    )
+        fuma = st.selectbox("Fumador", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
 
     with c2:
         genero = st.selectbox("Género", [1, 2], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
         peso = st.number_input("Peso (kg)", 30, 200, 85)
         ap_lo = st.number_input("Presión diastólica", 50, 150, 95)
-        glucosa = st.selectbox("Glucosa", [1, 2, 3])
-        alcohol = st.selectbox("Alcohol", [0, 1])
+        glucosa = st.selectbox(
+        "Nivel de Glucosa",
+        [1, 2, 3],
+        format_func=lambda x: {
+            1: "Normal",
+            2: "Por encima de lo normal",
+            3: "Muy alto"
+        }[x]
+    )
+        alcohol = st.selectbox("Consume Alcohol", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
 
-    actividad = st.selectbox("Actividad física", [0, 1], format_func=lambda x: "Sí" if x == 1 else "No")
+    actividad = st.selectbox("Actividad física", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
 
     predecir = st.button("🔍 Analizar Riesgo", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
