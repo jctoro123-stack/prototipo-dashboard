@@ -110,8 +110,8 @@ else:
     color = "#16a34a"
     texto = "BAJO RIESGO"
 
-        st.markdown(
-            f"""
+st.markdown(
+    f"""
             <div class="result-box" style="background-color:{color};">
                 {texto}
             </div>
@@ -119,23 +119,23 @@ else:
             unsafe_allow_html=True
         )
 
-        st.metric("Probabilidad estimada", f"{riesgo}%")
+st.metric("Probabilidad estimada", f"{riesgo}%")
 
-        st.progress(int(riesgo))
+st.progress(int(riesgo))
 
-        st.subheader("Recomendaciones")
+st.subheader("Recomendaciones")
 
-        if riesgo >= 70:
-            st.error("Paciente con alta probabilidad de enfermedad crónica.")
-            st.write("• Remisión inmediata")
-            st.write("• Perfil lipídico")
-            st.write("• Seguimiento en 30 días")
+if riesgo >= 70:
+    st.error("Paciente con alta probabilidad de enfermedad crónica.")
+    st.write("• Remisión inmediata")
+    st.write("• Perfil lipídico")
+    st.write("• Seguimiento en 30 días")
 
-        elif riesgo >= 40:
-            st.warning("Seguimiento preventivo recomendado.")
-            st.write("• Control médico")
-            st.write("• Cambios de estilo de vida")
+elif riesgo >= 40:
+    st.warning("Seguimiento preventivo recomendado.")
+    st.write("• Control médico")
+    st.write("• Cambios de estilo de vida")
 
-        else:
-            st.success("Riesgo bajo.")
-            st.write("• Mantener hábitos saludables")
+else:
+    st.success("Riesgo bajo.")
+    st.write("• Mantener hábitos saludables")
