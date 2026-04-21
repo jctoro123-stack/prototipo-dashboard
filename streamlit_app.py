@@ -127,7 +127,7 @@ with col2:
 
         # Predicción
         prob = modelo.predict_proba(datos_scaled)[0][1]
-        riesgo = round(prob * 100, 1)
+        riesgo = round(prob * 100, 2)
 
         # Clasificación del riesgo
         if riesgo >= 70:
