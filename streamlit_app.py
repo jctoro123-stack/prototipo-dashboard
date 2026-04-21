@@ -1,160 +1,144 @@
 import streamlit as st
+import pandas as pd
+import joblib
 
-# ---------------- CONFIGURACIÓN ----------------
+# ---------------- CARGA ----------------
+modelo = joblib.load("modelo_xgb.pkl")
+scaler = joblib.load("scaler.pkl")
+
 st.set_page_config(
-    page_title="Sistema Predictivo de Enfermedades Crónicas",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    page_title="Predicción Clínica",
+    layout="wide"
 )
 
-# ---------------- ESTILOS CSS ----------------
+# ---------------- CSS ----------------
 st.markdown("""
 <style>
-    .main {
-        background-color: #f3f4f6;
-    }
+.main {
+    background-color: #f3f4f6;
+}
 
-    .title-bar {
-        background-color: #1f5fbf;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        color: white;
-        margin-bottom: 20px;
-    }
+.title-box {
+    background-color: #1f5fbf;
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-    .card {
-        background-color: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-
-    .risk-high {
-        background-color: #ef4444;
-        color: white;
-        text-align: center;
-        padding: 20px;
-        border-radius: 10px;
-        font-size: 40px;
-        font-weight: bold;
-    }
-
-    .risk-bar {
-        display: flex;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .low {
-        flex: 1;
-        background-color: #65a30d;
-        color: white;
-        text-align: center;
-        padding: 15px;
-        font-weight: bold;
-    }
-
-    .medium {
-        flex: 1;
-        background-color: #eab308;
-        color: white;
-        text-align: center;
-        padding: 15px;
-        font-weight: bold;
-    }
-
-    .high {
-        flex: 1;
-        background-color: #dc2626;
-        color: white;
-        text-align: center;
-        padding: 15px;
-        font-weight: bold;
-    }
-
-    .recommendation {
-        font-size: 18px;
-        line-height: 1.8;
-    }
+.result-box {
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    font-size: 35px;
+    font-weight: bold;
+}
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- ENCABEZADO ----------------
+# ---------------- HEADER ----------------
 st.markdown("""
-<div class="title-bar">
+<div class="title-box">
     <h1>🫀 Sistema Predictivo de Enfermedades Crónicas</h1>
-    <h3>Predicción de riesgo cardiovascular y enfermedades crónicas</h3>
+    <h3>Modelo XGBoost en Atención Primaria</h3>
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------- COLUMNAS ----------------
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns(2)
 
-# ---------------- PANEL IZQUIERDO ----------------
+# ---------------- FORMULARIO ----------------
 with col1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("Datos del Paciente")
 
-    edad = st.number_input("Edad", min_value=1, max_value=100, value=58)
-    peso = st.number_input("Peso (kg)", min_value=1.0, max_value=200.0, value=85.0)
-    altura = st.number_input("Altura (cm)", min_value=50.0, max_value=250.0, value=170.0)
+    edad = st.number_input("Edad", 1, 100, 58)
+    genero = st.selectbox("Género", [1, 2])
 
-    sistolica = st.number_input("Presión Sistólica", value=150)
-    diastolica = st.number_input("Presión Diastólica", value=95)
+    altura = st.number_input("Altura (cm)", 100, 250, 170)
+    peso = st.number_input("Peso (kg)", 30, 200, 85)
 
-    glucosa = st.number_input("Glucosa", value=130)
-    colesterol = st.number_input("Colesterol", value=230)
+    ap_hi = st.number_input("Presión Sistólica", 80, 250, 150)
+    ap_lo = st.number_input("Presión Diastólica", 50, 150, 95)
 
-    fumador = st.selectbox("Fumador", ["Sí", "No"])
-    alcohol = st.selectbox("Consumo de Alcohol", ["Sí", "No"])
-    actividad = st.selectbox("Actividad Física", ["Sí", "No"])
+    colesterol = st.selectbox("Colesterol", [1, 2, 3])
+    glucosa = st.selectbox("Glucosa", [1, 2, 3])
 
-    predecir = st.button("Predecir Riesgo", use_container_width=True)
+    fuma = st.selectbox("Fumador", [0, 1])
+    alcohol = st.selectbox("Alcohol", [0, 1])
+    actividad = st.selectbox("Actividad Física", [0, 1])
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    predecir = st.button("Predecir Riesgo")
 
-# ---------------- PANEL DERECHO ----------------
+# ---------------- PREDICCIÓN ----------------
 with col2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Resultado de la Predicción")
-
-    # Simulación del resultado
-    riesgo = 82
+    st.subheader("Resultado")
 
     if predecir:
-        st.markdown("""
-        <div class="risk-high">
-            ALTO RIESGO
-        </div>
-        """, unsafe_allow_html=True)
+        bmi = peso / ((altura / 100) ** 2)
+
+        datos = pd.DataFrame([[
+            edad,
+            genero,
+            altura,
+            peso,
+            ap_hi,
+            ap_lo,
+            colesterol,
+            glucosa,
+            fuma,
+            alcohol,
+            actividad,
+            bmi
+        ]], columns=[
+            "age", "gender", "height", "weight",
+            "ap_hi", "ap_lo", "cholesterol",
+            "gluc", "smoke", "alco", "active",
+            "bmi"
+        ])
+
+        datos_scaled = scaler.transform(datos)
+
+        prob = modelo.predict_proba(datos_scaled)[0][1]
+        riesgo = round(prob * 100, 2)
+
+        if riesgo >= 70:
+            color = "#dc2626"
+            texto = "ALTO RIESGO"
+        elif riesgo >= 40:
+            color = "#eab308"
+            texto = "RIESGO MODERADO"
+        else:
+            color = "#16a34a"
+            texto = "BAJO RIESGO"
 
         st.markdown(
-            f"<h2 style='margin-top:20px;'>Probabilidad Estimada: <b>{riesgo}%</b></h2>",
+            f"""
+            <div class="result-box" style="background-color:{color};">
+                {texto}
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-        st.markdown("""
-        <div class="risk-bar">
-            <div class="low">Bajo</div>
-            <div class="medium">Moderado</div>
-            <div class="high">Alto</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric("Probabilidad estimada", f"{riesgo}%")
 
-        st.markdown("""
-        <div class="recommendation">
-            <h3>Recomendaciones:</h3>
-            <ul>
-                <li>Paciente con alta probabilidad de enfermedad crónica.</li>
-                <li>Remitir a medicina interna.</li>
-                <li>Realizar perfil lipídico y control en 30 días.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.progress(int(riesgo))
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.subheader("Recomendaciones")
+
+        if riesgo >= 70:
+            st.error("Paciente con alta probabilidad de enfermedad crónica.")
+            st.write("• Remisión inmediata")
+            st.write("• Perfil lipídico")
+            st.write("• Seguimiento en 30 días")
+
+        elif riesgo >= 40:
+            st.warning("Seguimiento preventivo recomendado.")
+            st.write("• Control médico")
+            st.write("• Cambios de estilo de vida")
+
+        else:
+            st.success("Riesgo bajo.")
+            st.write("• Mantener hábitos saludables")
