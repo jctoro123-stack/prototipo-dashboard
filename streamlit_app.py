@@ -91,9 +91,9 @@ with col2:
             "active": [actividad],
             "imc": [imc]
 })
-
-prob = modelo.predict_proba(datos)[0][1]
-riesgo = round(prob * 100, 2)
+        datos_scaled = scaler.transform(datos)
+        prob = modelo.predict_proba(datos_scaled)[0][1]
+        riesgo = round(prob * 100, 2)
 
 if riesgo >= 70:
     color = "#dc2626"
