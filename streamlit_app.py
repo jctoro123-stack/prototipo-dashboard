@@ -92,9 +92,6 @@ with col2:
             "imc": [imc]
 })
 
-# Reordenar según el scaler
-datos = datos[scaler.feature_names_in_]
-
 datos_scaled = scaler.transform(datos)
 
 prob = modelo.predict_proba(datos_scaled)[0][1]
