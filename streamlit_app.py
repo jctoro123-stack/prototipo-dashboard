@@ -16,97 +16,111 @@ scaler = joblib.load("scaler.pkl")
 # ---------------- ESTILOS ----------------
 st.markdown("""
 <style>
-.main {
-    background-color: #f3f4f6;
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 1400px;
 }
 
-.title-box {
-    background-color: #1f5fbf;
-    padding: 20px;
-    border-radius: 15px;
+.main-title {
+    background: linear-gradient(135deg, #1f5fbf, #2563eb);
     color: white;
-    text-align: center;
-    margin-bottom: 20px;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 1.5rem;
 }
 
-.result-box {
-    padding: 20px;
-    border-radius: 15px;
-    color: white;
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.result-card {
+    border-radius: 20px;
+    padding: 1.5rem;
     text-align: center;
-    font-size: 35px;
+    color: white;
     font-weight: bold;
-    margin-top: 20px;
+    font-size: clamp(22px, 3vw, 36px);
+    margin-bottom: 1rem;
 }
 
-.recommendation-box {
-    background-color: white;
-    padding: 20px;
-    border-radius: 15px;
-    margin-top: 20px;
+.metric-card {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+@media (max-width: 768px) {
+    .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .main-title {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .card {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .result-card {
+        padding: 1rem;
+        font-size: 22px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
-
 # ---------------- ENCABEZADO ----------------
 st.markdown("""
-<div class="title-box">
-    <h1>🫀 Sistema Predictivo de Enfermedades Crónicas</h1>
-    <h3>Modelo Predictivo con XGBoost para Atención Primaria</h3>
+<div class='main-title'>
+    <h1 style='margin:0;'>🫀 Dashboard Clínico Predictivo</h1>
+    <p style='margin:0.5rem 0 0 0; font-size: 18px;'>Predicción de riesgo cardiovascular con XGBoost</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------- COLUMNAS ----------------
-col1, col2 = st.columns([1, 1])
+# ================= LAYOUT =================
+left_col, right_col = st.columns([1.1, 1], gap="large")
 
-# ---------------- FORMULARIO ----------------
-with col1:
-    st.subheader("📋 Datos del Paciente")
+with left_col:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("📋 Datos del paciente")
 
-    edad = st.number_input("Edad", min_value=1, max_value=100, value=58)
-    genero = st.selectbox("Género", [1, 2], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
+    c1, c2 = st.columns(2)
+    with c1:
+        edad = st.number_input("Edad", 1, 100, 58)
+        altura = st.number_input("Altura (cm)", 100, 250, 170)
+        ap_hi = st.number_input("Presión sistólica", 80, 250, 150)
+        colesterol = st.selectbox("Colesterol", [1, 2, 3])
+        fuma = st.selectbox("Fumador", [0, 1])
 
-    altura = st.number_input("Altura (cm)", min_value=100, max_value=250, value=170)
-    peso = st.number_input("Peso (kg)", min_value=30, max_value=200, value=85)
+    with c2:
+        genero = st.selectbox("Género", [1, 2], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
+        peso = st.number_input("Peso (kg)", 30, 200, 85)
+        ap_lo = st.number_input("Presión diastólica", 50, 150, 95)
+        glucosa = st.selectbox("Glucosa", [1, 2, 3])
+        alcohol = st.selectbox("Alcohol", [0, 1])
 
-    ap_hi = st.number_input("Presión Sistólica", min_value=80, max_value=250, value=150)
-    ap_lo = st.number_input("Presión Diastólica", min_value=50, max_value=150, value=95)
+    actividad = st.selectbox("Actividad física", [0, 1], format_func=lambda x: "Sí" if x == 1 else "No")
 
-    colesterol = st.selectbox(
-        "Nivel de Colesterol",
-        [1, 2, 3],
-        format_func=lambda x: {
-            1: "Normal",
-            2: "Por encima de lo normal",
-            3: "Muy alto"
-        }[x]
-    )
+    predecir = st.button("🔍 Analizar Riesgo", use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    glucosa = st.selectbox(
-        "Nivel de Glucosa",
-        [1, 2, 3],
-        format_func=lambda x: {
-            1: "Normal",
-            2: "Por encima de lo normal",
-            3: "Muy alto"
-        }[x]
-    )
-
-    fuma = st.selectbox("Fumador", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
-    alcohol = st.selectbox("Consume Alcohol", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
-    actividad = st.selectbox("Actividad Física", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
-
-    predecir = st.button("🔍 Predecir Riesgo", use_container_width=True)
-
-# ---------------- RESULTADO ----------------
-with col2:
-    st.subheader("📊 Resultado")
+with right_col:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("📊 Resultado clínico")
 
     if predecir:
-        # Calcular IMC
         imc = peso / ((altura / 100) ** 2)
 
-        # Crear DataFrame
         datos = pd.DataFrame({
             "age": [edad],
             "gender": [genero],
@@ -122,64 +136,42 @@ with col2:
             "imc": [imc]
         })
 
-        # Escalar
         datos_scaled = scaler.transform(datos)
-
-        # Predicción
         prob = modelo.predict_proba(datos_scaled)[0][1]
-        riesgo = round(prob * 100, 2)
+        riesgo = prob * 100
 
-        # Clasificación del riesgo
         if riesgo >= 70:
             color = "#dc2626"
-            texto = "🔴 ALTO RIESGO"
+            estado = "🔴 ALTO RIESGO"
         elif riesgo >= 40:
             color = "#eab308"
-            texto = "🟡 RIESGO MODERADO"
+            estado = "🟡 RIESGO MODERADO"
         else:
             color = "#16a34a"
-            texto = "🟢 BAJO RIESGO"
+            estado = "🟢 BAJO RIESGO"
 
-        # Mostrar resultado
         st.markdown(
-            f"""
-            <div class="result-box" style="background-color:{color};">
-                {texto}
-            </div>
-            """,
+            f"<div class='result-card' style='background:{color};'>{estado}</div>",
             unsafe_allow_html=True
         )
 
-        st.metric("Probabilidad estimada", f"{riesgo:.2f}%")
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric("Probabilidad", f"{riesgo:.1f}%")
+        with m2:
+            st.metric("IMC", f"{imc:.1f}")
+
         st.progress(int(riesgo))
 
-        # Mostrar IMC
-        st.metric("IMC calculado", f"{imc:.2f}")
-
-        # Recomendaciones
-        st.markdown('<div class="recommendation-box">', unsafe_allow_html=True)
-        st.subheader("🩺 Recomendaciones Clínicas")
-
+        st.markdown("### 🩺 Recomendaciones")
         if riesgo >= 70:
-            st.error("Paciente con alta probabilidad de enfermedad cardiovascular.")
-            st.write("• Remisión inmediata a medicina interna")
-            st.write("• Control prioritario de presión arterial")
-            st.write("• Solicitar perfil lipídico y glucosa")
-            st.write("• Seguimiento en 30 días")
-
+            st.error("Requiere evaluación médica prioritaria.")
         elif riesgo >= 40:
-            st.warning("Riesgo moderado, se recomienda seguimiento preventivo.")
-            st.write("• Control médico periódico")
-            st.write("• Mejorar hábitos alimenticios")
-            st.write("• Incrementar actividad física")
-            st.write("• Reevaluación en 60 días")
-
+            st.warning("Se recomienda seguimiento preventivo.")
         else:
-            st.success("Riesgo bajo.")
-            st.write("• Mantener hábitos saludables")
-            st.write("• Seguimiento preventivo anual")
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
+            st.success("Mantener hábitos saludables.")
     else:
-        st.info("Ingrese los datos del paciente y presione **Predecir Riesgo**.")
+        st.info("Complete el formulario para visualizar el análisis.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
