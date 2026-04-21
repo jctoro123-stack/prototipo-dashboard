@@ -89,7 +89,7 @@ with col2:
             "smoke": [fuma],
             "alco": [alcohol],
             "active": [actividad],
-            "bmi": [bmi]
+            "imc": [imc]
 })
 
 # Reordenar según el scaler
