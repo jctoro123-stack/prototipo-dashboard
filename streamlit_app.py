@@ -92,12 +92,6 @@ with col2:
             "bmi": [bmi]
 })
 
-st.write("Columnas del formulario:")
-st.write(list(datos.columns))
-
-st.write("Columnas esperadas por el scaler:")
-st.write(list(scaler.feature_names_in_))
-
 # Reordenar según el scaler
 datos = datos[scaler.feature_names_in_]
 
