@@ -137,6 +137,19 @@ with right_col:
     if predecir:
         imc = peso / ((altura / 100) ** 2)
 
+        if imc < 18.5:
+    imc_categoria = 1
+    texto_imc = "Bajo peso"
+elif imc < 25:
+    imc_categoria = 2
+    texto_imc = "Normal"
+elif imc < 30:
+    imc_categoria = 3
+    texto_imc = "Sobrepeso"
+else:
+    imc_categoria = 4
+    texto_imc = "Obesidad"
+
         datos = pd.DataFrame({
             "age": [edad],
             "gender": [genero],
@@ -150,6 +163,7 @@ with right_col:
             "alco": [alcohol],
             "active": [actividad],
             "imc": [imc]
+            "imc_categoria": [imc_categoria]
         })
 
         datos_scaled = scaler.transform(datos)
@@ -176,7 +190,8 @@ with right_col:
             st.metric("Probabilidad", f"{riesgo:.1f}%")
         with m2:
             st.metric("IMC", f"{imc:.1f}")
-
+            st.write(f"**Clasificación IMC:** {texto_imc}")
+            
         st.progress(int(riesgo))
 
         st.markdown("### 🩺 Recomendaciones")
