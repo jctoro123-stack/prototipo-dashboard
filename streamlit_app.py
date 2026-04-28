@@ -134,37 +134,37 @@ with right_col:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("📊 Resultado clínico")
 
-    if predecir:
-        imc = peso / ((altura / 100) ** 2)
+   if predecir:
+    imc = peso / ((altura / 100) ** 2)
 
-        if imc < 18.5:
-            imc_categoria = 1
-            texto_imc = "Bajo peso"
-        elif imc < 25:
-            imc_categoria = 2
-            texto_imc = "Normal"
-        elif imc < 30:
-            imc_categoria = 3
-            texto_imc = "Sobrepeso"
-        else:
-            imc_categoria = 4
-            texto_imc = "Obesidad"
-        
-        datos = pd.DataFrame({
-            "age": [edad],
-            "gender": [genero],
-            "height": [altura],
-            "weight": [peso],
-            "ap_hi": [ap_hi],
-            "ap_lo": [ap_lo],
-            "cholesterol": [colesterol],
-            "gluc": [glucosa],
-            "smoke": [fuma],
-            "alco": [alcohol],
-            "active": [actividad],
-            "imc": [imc],
-            "imc_categoria": [imc_categoria]
-        })
+    imc_categoria = 4
+    texto_imc = "Obesidad"
+
+    if imc < 18.5:
+        imc_categoria = 1
+        texto_imc = "Bajo peso"
+    elif imc < 25:
+        imc_categoria = 2
+        texto_imc = "Normal"
+    elif imc < 30:
+        imc_categoria = 3
+        texto_imc = "Sobrepeso"
+
+    datos = pd.DataFrame({
+        "age": [edad],
+        "gender": [genero],
+        "height": [altura],
+        "weight": [peso],
+        "ap_hi": [ap_hi],
+        "ap_lo": [ap_lo],
+        "cholesterol": [colesterol],
+        "gluc": [glucosa],
+        "smoke": [fuma],
+        "alco": [alcohol],
+        "active": [actividad],
+        "imc": [imc],
+        "imc_categoria": [imc_categoria]
+    })
 
         st.write("Columnas esperadas:", scaler.feature_names_in_)
         datos_scaled = scaler.transform(datos)
