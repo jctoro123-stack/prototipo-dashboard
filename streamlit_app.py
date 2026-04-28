@@ -100,32 +100,32 @@ with left_col:
         altura = st.number_input("Altura (cm)", 100, 250, 170)
         ap_hi = st.number_input("Presión sistólica", 80, 250, 150)
         colesterol = st.selectbox(
-        "Nivel de Colesterol",
-        [1, 2, 3],
-        format_func=lambda x: {
-            1: "Normal",
-            2: "Por encima de lo normal",
-            3: "Muy alto"
-        }[x]
-    )
-        fuma = st.selectbox("Fumador", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
+            "Nivel de Colesterol",
+            [1, 2, 3],
+            format_func=lambda x: {
+                1: "Normal",
+                2: "Por encima de lo normal",
+                3: "Muy alto"
+            }[x]
+        )
+        fuma = st.selectbox("Fumador", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
 
     with c2:
         genero = st.selectbox("Género", [1, 2], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
         peso = st.number_input("Peso (kg)", 30, 200, 85)
         ap_lo = st.number_input("Presión diastólica", 50, 150, 95)
         glucosa = st.selectbox(
-        "Nivel de Glucosa",
-        [1, 2, 3],
-        format_func=lambda x: {
-            1: "Normal",
-            2: "Por encima de lo normal",
-            3: "Muy alto"
-        }[x]
-    )
-        alcohol = st.selectbox("Consume Alcohol", [0, 1], format_func=lambda x: "No" if x == 1 else "Sí")
+            "Nivel de Glucosa",
+            [1, 2, 3],
+            format_func=lambda x: {
+                1: "Normal",
+                2: "Por encima de lo normal",
+                3: "Muy alto"
+            }[x]
+        )
+        alcohol = st.selectbox("Consume Alcohol", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
 
-    actividad = st.selectbox("Actividad física", [0, 1],format_func=lambda x: "No" if x == 1 else "Sí")
+    actividad = st.selectbox("Actividad física", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
 
     predecir = st.button("🔍 Analizar Riesgo", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
@@ -134,78 +134,77 @@ with right_col:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("📊 Resultado clínico")
 
-if predecir:
-    imc = peso / ((altura / 100) ** 2)
+    if predecir:
+        imc = peso / ((altura / 100) ** 2)
 
-    categorias = ["Bajo peso", "Normal", "Sobrepeso", "Obesidad"]
+        categorias = ["Bajo peso", "Normal", "Sobrepeso", "Obesidad"]
 
-    imc_categoria = 1 if imc < 18.5 else 2 if imc < 25 else 3 if imc < 30 else 4
-    texto_imc = categorias[imc_categoria - 1]
+        imc_categoria = 1 if imc < 18.5 else 2 if imc < 25 else 3 if imc < 30 else 4
+        texto_imc = categorias[imc_categoria - 1]
 
-    datos = pd.DataFrame({
-        "age": [edad],
-        "gender": [genero],
-        "height": [altura],
-        "weight": [peso],
-        "ap_hi": [ap_hi],
-        "ap_lo": [ap_lo],
-        "cholesterol": [colesterol],
-        "gluc": [glucosa],
-        "smoke": [fuma],
-        "alco": [alcohol],
-        "active": [actividad],
-        "imc": [imc],
-        "imc_categoria": [imc_categoria]
-    })
+        datos = pd.DataFrame({
+            "age": [edad],
+            "gender": [genero],
+            "height": [altura],
+            "weight": [peso],
+            "ap_hi": [ap_hi],
+            "ap_lo": [ap_lo],
+            "cholesterol": [colesterol],
+            "gluc": [glucosa],
+            "smoke": [fuma],
+            "alco": [alcohol],
+            "active": [actividad],
+            "imc": [imc],
+            "imc_categoria": [imc_categoria]
+        })
 
-    datos_scaled = scaler.transform(datos)
-    prob = modelo.predict_proba(datos_scaled)[0][1]
-    riesgo = prob * 100
+        datos_scaled = scaler.transform(datos)
+        prob = modelo.predict_proba(datos_scaled)[0][1]
+        riesgo = prob * 100
 
-    if riesgo >= 70:
-        color = "#dc2626"
-        estado = "🔴 ALTO RIESGO"
-    elif riesgo >= 40:
-        color = "#eab308"
-        estado = "🟡 RIESGO MODERADO"
-    else:
-        color = "#16a34a"
-        estado = "🟢 BAJO RIESGO"
+        if riesgo >= 70:
+            color = "#dc2626"
+            estado = "🔴 ALTO RIESGO"
+        elif riesgo >= 40:
+            color = "#eab308"
+            estado = "🟡 RIESGO MODERADO"
+        else:
+            color = "#16a34a"
+            estado = "🟢 BAJO RIESGO"
 
-    st.markdown(
-        f"<div class='result-card' style='background:{color};'>{estado}</div>",
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            f"<div class='result-card' style='background:{color};'>{estado}</div>",
+            unsafe_allow_html=True
+        )
 
-    m1, m2 = st.columns(2)
-    with m1:
-        st.metric("Probabilidad", f"{riesgo:.1f}%")
-    with m2:
-        st.metric("IMC", f"{imc:.1f}")
-        st.write(f"**Clasificación IMC:** {texto_imc}")
-            
-    st.progress(int(riesgo))
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric("Probabilidad", f"{riesgo:.1f}%")
+        with m2:
+            st.metric("IMC", f"{imc:.1f}")
+            st.write(f"**Clasificación IMC:** {texto_imc}")
 
-    st.markdown("### 🩺 Recomendaciones")
+        st.progress(int(riesgo))
 
-    if riesgo >= 70:
-        st.error("Paciente con alta probabilidad de enfermedad cardiovascular.")
-        st.write("• Remisión inmediata a medicina interna")
-        st.write("• Control prioritario de presión arterial")
-        st.write("• Solicitar perfil lipídico y glucosa")
-        st.write("• Seguimiento en 30 días")
+        st.markdown("### 🩺 Recomendaciones")
 
-    elif riesgo >= 40:
-        st.warning("Riesgo moderado, se recomienda seguimiento preventivo.")
-        st.write("• Control médico periódico")
-        st.write("• Mejorar hábitos alimenticios")
-        st.write("• Incrementar actividad física")
-        st.write("• Reevaluación en 60 días")
+        if riesgo >= 70:
+            st.error("Paciente con alta probabilidad de enfermedad cardiovascular.")
+            st.write("• Remisión inmediata a medicina interna")
+            st.write("• Control prioritario de presión arterial")
+            st.write("• Solicitar perfil lipídico y glucosa")
+            st.write("• Seguimiento en 30 días")
 
-    else:
-        st.success("Riesgo bajo.")
-        st.write("• Mantener hábitos saludables")
-        st.write("• Seguimiento preventivo anual")
+        elif riesgo >= 40:
+            st.warning("Riesgo moderado, se recomienda seguimiento preventivo.")
+            st.write("• Control médico periódico")
+            st.write("• Mejorar hábitos alimenticios")
+            st.write("• Incrementar actividad física")
+            st.write("• Reevaluación en 60 días")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.success("Riesgo bajo.")
+            st.write("• Mantener hábitos saludables")
+            st.write("• Seguimiento preventivo anual")
 
+    st.markdown("</div>", unsafe_allow_html=True)
