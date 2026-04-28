@@ -187,8 +187,8 @@ if predecir:
     st.progress(int(riesgo))
 
     st.markdown("### 🩺 Recomendaciones")
-with right_col:
-            if riesgo >= 70:
+
+        if riesgo >= 70:
             st.error("Paciente con alta probabilidad de enfermedad cardiovascular.")
             st.write("• Remisión inmediata a medicina interna")
             st.write("• Control prioritario de presión arterial")
@@ -206,5 +206,6 @@ with right_col:
             st.success("Riesgo bajo.")
             st.write("• Mantener hábitos saludables")
             st.write("• Seguimiento preventivo anual")
-        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
