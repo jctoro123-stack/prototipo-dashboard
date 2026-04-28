@@ -136,7 +136,7 @@ with right_col:
 
     if predecir:
         imc = peso / ((altura / 100) ** 2)
-        
+
         if imc < 18.5:
             imc_categoria = 1
             texto_imc = "Bajo peso"
@@ -149,7 +149,7 @@ with right_col:
         else:
             imc_categoria = 4
             texto_imc = "Obesidad"
-
+        
         datos = pd.DataFrame({
             "age": [edad],
             "gender": [genero],
