@@ -161,10 +161,6 @@ if predecir:
     datos_scaled = scaler.transform(datos)
     prob = modelo.predict_proba(datos_scaled)[0][1]
     riesgo = prob * 100
-       
-    datos_scaled = scaler.transform(datos)
-    prob = modelo.predict_proba(datos_scaled)[0][1]
-    riesgo = prob * 100
 
     if riesgo >= 70:
         color = "#dc2626"
