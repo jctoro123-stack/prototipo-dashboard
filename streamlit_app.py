@@ -56,17 +56,28 @@ st.markdown("""
 
 # ---------------- FUNCIONES ----------------
 def clasificar_peso(genero, altura, peso):
-    factor = 1.07 if genero == 1 else 1.0
-    if peso < 60 * factor:
-        return 1, "Peso normal"
-    elif peso < 80 * factor:
-        return 2, "Sobrepeso"
-    elif peso < 100 * factor:
-        return 3, "Obesidad I"
-    elif peso < 120 * factor:
-        return 4, "Obesidad II"
+    imc = peso / ((altura / 100) ** 2)
+      # Clasificación OMS
+    if imc < 18.5:
+        categoria = 1
+        texto = "Bajo peso"
+    elif imc < 25:
+        categoria = 2
+        texto = "Normal"
+    elif imc < 30:
+        categoria = 3
+        texto = "Sobrepeso"
+    elif imc < 35:
+        categoria = 4
+        texto = "Obesidad I"
+    elif imc < 40:
+        categoria = 5
+        texto = "Obesidad II"
     else:
-        return 5, "Obesidad III"
+        categoria = 6
+        texto = "Obesidad III"
+
+    return categoria, texto, imc
 
 def interpretacion_clinica(data):
     factores = []
