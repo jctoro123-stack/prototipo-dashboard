@@ -21,190 +21,184 @@ st.markdown("""
     padding-bottom: 2rem;
     max-width: 1400px;
 }
-
 .main-title {
     background: linear-gradient(135deg, #1f5fbf, #2563eb);
     color: white;
     padding: 1.5rem;
     border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     margin-bottom: 1.5rem;
 }
-
 .card {
     background: white;
     border-radius: 20px;
     padding: 1.5rem;
     box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    border: 1px solid #e5e7eb;
 }
-
 .result-card {
     border-radius: 20px;
     padding: 1.5rem;
     text-align: center;
     color: white;
     font-weight: bold;
-    font-size: clamp(22px, 3vw, 36px);
+    font-size: 28px;
     margin-bottom: 1rem;
-}
-
-.metric-card {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-}
-
-@media (max-width: 768px) {
-    .block-container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .main-title {
-        padding: 1rem;
-        border-radius: 16px;
-    }
-
-    .card {
-        padding: 1rem;
-        border-radius: 16px;
-    }
-
-    .result-card {
-        padding: 1rem;
-        font-size: 22px;
-    }
 }
 </style>
 """, unsafe_allow_html=True)
+
 # ---------------- ENCABEZADO ----------------
 st.markdown("""
 <div class='main-title'>
-    <h1 style='margin:0;'>🫀 Sistema Predictivo de Enfermedades Crónica</h1>
-    <p style='margin:0.5rem 0 0 0; font-size: 18px;'>Predicción de riesgo cardiovascular con XGBoost</p>
+<h1>🫀 Sistema Predictivo de Enfermedades Crónicas</h1>
+<p>Diagnóstico clínico asistido con IA</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ================= LAYOUT =================
-left_col, right_col = st.columns([1.1, 1], gap="large")
+# ---------------- FUNCIONES ----------------
+def clasificar_peso(genero, altura, peso):
+    factor = 1.07 if genero == 1 else 1.0
+    if peso < 60 * factor:
+        return 1, "Peso normal"
+    elif peso < 80 * factor:
+        return 2, "Sobrepeso"
+    elif peso < 100 * factor:
+        return 3, "Obesidad I"
+    elif peso < 120 * factor:
+        return 4, "Obesidad II"
+    else:
+        return 5, "Obesidad III"
 
-with left_col:
+def interpretacion_clinica(data):
+    factores = []
+    if data["ap_hi"] > 140: factores.append("Hipertensión sistólica")
+    if data["ap_lo"] > 90: factores.append("Hipertensión diastólica")
+    if data["cholesterol"] == 3: factores.append("Colesterol muy alto")
+    if data["gluc"] == 3: factores.append("Glucosa muy alta")
+    if data["smoke"] == 1: factores.append("Tabaquismo")
+    if data["alco"] == 1: factores.append("Alcohol")
+    if data["active"] == 0: factores.append("Sedentarismo")
+    if data["imc"] > 30: factores.append("Obesidad")
+    return factores
+
+# ---------------- LAYOUT ----------------
+left, right = st.columns([1.1,1])
+
+with left:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("📋 Datos del paciente")
 
     c1, c2 = st.columns(2)
+
     with c1:
         edad = st.number_input("Edad", 1, 100, 58)
         altura = st.number_input("Altura (cm)", 100, 250, 170)
         ap_hi = st.number_input("Presión sistólica", 80, 250, 150)
-        colesterol = st.selectbox(
-            "Nivel de Colesterol",
-            [1, 2, 3],
-            format_func=lambda x: {
-                1: "Normal",
-                2: "Por encima de lo normal",
-                3: "Muy alto"
-            }[x]
-        )
-        fuma = st.selectbox("Fumador", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
+        colesterol = st.selectbox("Colesterol", [1,2,3])
+        fuma = st.selectbox("Fuma", [0,1])
 
     with c2:
-        genero = st.selectbox("Género", [1, 2], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
-        peso = st.number_input("Peso (kg)", 30, 200, 85)
+        genero = st.selectbox("Género", [1,2])
+        peso = st.number_input("Peso", 30, 200, 85)
         ap_lo = st.number_input("Presión diastólica", 50, 150, 95)
-        glucosa = st.selectbox(
-            "Nivel de Glucosa",
-            [1, 2, 3],
-            format_func=lambda x: {
-                1: "Normal",
-                2: "Por encima de lo normal",
-                3: "Muy alto"
-            }[x]
-        )
-        alcohol = st.selectbox("Consume Alcohol", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
+        glucosa = st.selectbox("Glucosa", [1,2,3])
+        alcohol = st.selectbox("Alcohol", [0,1])
 
-    actividad = st.selectbox("Actividad física", [0, 1], format_func=lambda x: "No" if x == 0 else "Sí")
+    actividad = st.selectbox("Actividad física", [0,1])
 
     predecir = st.button("🔍 Analizar Riesgo", use_container_width=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
-with right_col:
+with right:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("📊 Resultado clínico")
 
     if predecir:
+
+        # ----------- VARIABLES -----------
         imc = peso / ((altura / 100) ** 2)
+        imc_cat, texto_imc = clasificar_peso(genero, altura, peso)
 
-        categorias = ["Bajo peso", "Normal", "Sobrepeso", "Obesidad"]
+        presion_pulso = ap_hi - ap_lo
+        ratio_presion = ap_hi / ap_lo if ap_lo != 0 else 0
+        riesgo_metabolico = colesterol + glucosa
+        estilo_vida = fuma + alcohol - actividad
 
-        imc_categoria = 1 if imc < 18.5 else 2 if imc < 25 else 3 if imc < 30 else 4
-        texto_imc = categorias[imc_categoria - 1]
+        imc_x_edad = imc * edad
+        presion_x_edad = ap_hi * edad
+        peso_x_altura = peso / altura
 
+        # ----------- DATAFRAME -----------
         datos = pd.DataFrame({
-            "age": [edad],
-            "gender": [genero],
-            "height": [altura],
-            "weight": [peso],
-            "ap_hi": [ap_hi],
-            "ap_lo": [ap_lo],
-            "cholesterol": [colesterol],
-            "gluc": [glucosa],
-            "smoke": [fuma],
-            "alco": [alcohol],
-            "active": [actividad],
-            "imc": [imc],
-            "imc_categoria": [imc_categoria]
+            'age':[edad],'gender':[genero],'height':[altura],'weight':[peso],
+            'ap_hi':[ap_hi],'ap_lo':[ap_lo],'cholesterol':[colesterol],'gluc':[glucosa],
+            'smoke':[fuma],'alco':[alcohol],'active':[actividad],
+            'imc':[imc],'imc_categoria':[imc_cat],
+            'presion_pulso':[presion_pulso],'ratio_presion':[ratio_presion],
+            'riesgo_metabolico':[riesgo_metabolico],'estilo_vida':[estilo_vida],
+            'imc_x_edad':[imc_x_edad],'presion_x_edad':[presion_x_edad],
+            'peso_x_altura':[peso_x_altura]
         })
 
-        datos_scaled = scaler.transform(datos)
-        prob = modelo.predict_proba(datos_scaled)[0][1]
+        datos = datos[scaler.feature_names_in_]
+
+        # ----------- PREDICCIÓN -----------
+        prob = modelo.predict_proba(scaler.transform(datos))[0][1]
         riesgo = prob * 100
 
+        # ----------- RESULTADO VISUAL -----------
         if riesgo >= 70:
-            color = "#dc2626"
-            estado = "🔴 ALTO RIESGO"
+            color, estado = "#dc2626", "🔴 ALTO RIESGO"
         elif riesgo >= 40:
-            color = "#eab308"
-            estado = "🟡 RIESGO MODERADO"
+            color, estado = "#eab308", "🟡 MODERADO"
         else:
-            color = "#16a34a"
-            estado = "🟢 BAJO RIESGO"
+            color, estado = "#16a34a", "🟢 BAJO"
 
-        st.markdown(
-            f"<div class='result-card' style='background:{color};'>{estado}</div>",
-            unsafe_allow_html=True
-        )
+        st.markdown(f"<div class='result-card' style='background:{color}'>{estado}</div>", unsafe_allow_html=True)
 
-        m1, m2 = st.columns(2)
-        with m1:
-            st.metric("Probabilidad", f"{riesgo:.1f}%")
-        with m2:
-            st.metric("IMC", f"{imc:.1f}")
-            st.write(f"**Clasificación IMC:** {texto_imc}")
+        st.metric("Probabilidad", f"{riesgo:.1f}%")
+        st.metric("IMC", f"{imc:.1f}")
+        st.write(f"Clasificación: {texto_imc}")
 
         st.progress(int(riesgo))
 
-        st.markdown("### 🩺 Recomendaciones")
+        # ----------- FACTORES -----------
+        st.markdown("### ⚠️ Factores de riesgo")
+        factores = interpretacion_clinica({
+            "ap_hi":ap_hi,"ap_lo":ap_lo,"cholesterol":colesterol,
+            "gluc":glucosa,"smoke":fuma,"alco":alcohol,
+            "active":actividad,"imc":imc
+        })
 
-        if riesgo >= 70:
-            st.error("Paciente con alta probabilidad de enfermedad cardiovascular.")
-            st.write("• Remisión inmediata a medicina interna")
-            st.write("• Control prioritario de presión arterial")
-            st.write("• Solicitar perfil lipídico y glucosa")
-            st.write("• Seguimiento en 30 días")
-
-        elif riesgo >= 40:
-            st.warning("Riesgo moderado, se recomienda seguimiento preventivo.")
-            st.write("• Control médico periódico")
-            st.write("• Mejorar hábitos alimenticios")
-            st.write("• Incrementar actividad física")
-            st.write("• Reevaluación en 60 días")
-
+        if factores:
+            for f in factores:
+                st.write(f"• {f}")
         else:
-            st.success("Riesgo bajo.")
-            st.write("• Mantener hábitos saludables")
-            st.write("• Seguimiento preventivo anual")
+            st.success("Sin factores relevantes")
+
+        # ----------- DIAGNÓSTICO -----------
+        st.markdown("### 🧾 Diagnóstico")
+        if riesgo >= 70:
+            st.error("Alto riesgo cardiovascular")
+        elif riesgo >= 40:
+            st.warning("Riesgo moderado")
+        else:
+            st.success("Riesgo bajo")
+
+        # ----------- ALERTAS -----------
+        st.markdown("### 🚨 Alertas")
+        if ap_hi > 180 or ap_lo > 120:
+            st.error("Crisis hipertensiva")
+
+        # ----------- PLAN -----------
+        st.markdown("### 🩺 Plan")
+        if riesgo >= 70:
+            st.write("• Evaluación inmediata")
+        elif riesgo >= 40:
+            st.write("• Seguimiento preventivo")
+        else:
+            st.write("• Control anual")
+
+        st.caption("⚠️ Este sistema no reemplaza un diagnóstico médico profesional.")
 
     st.markdown("</div>", unsafe_allow_html=True)
