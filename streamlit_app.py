@@ -93,17 +93,49 @@ with left:
         edad = st.number_input("Edad", 1, 100, 58)
         altura = st.number_input("Altura (cm)", 100, 250, 170)
         ap_hi = st.number_input("Presión sistólica", 80, 250, 150)
-        colesterol = st.selectbox("Colesterol", [1,2,3])
-        fuma = st.selectbox("Fuma", [0,1])
+        colesterol = st.selectbox(
+            "Nivel de colesterol",
+            [1, 2, 3],
+            format_func=lambda x: {
+                1: "Normal",
+                2: "Por encima del promedio",
+                3: "Muy alto"
+            }[x]
+        )
+        fuma = st.selectbox(
+            "Fumador",
+            [0, 1],
+            format_func=lambda x: "No" if x == 0 else "Sí"
+        )
 
     with c2:
-        genero = st.selectbox("Género", [1,2])
+        genero = st.selectbox(
+            "Género",
+            [1, 2],
+            format_func=lambda x: "Masculino" if x == 1 else "Femenino"
+        )
         peso = st.number_input("Peso", 30, 200, 85)
         ap_lo = st.number_input("Presión diastólica", 50, 150, 95)
-        glucosa = st.selectbox("Glucosa", [1,2,3])
-        alcohol = st.selectbox("Alcohol", [0,1])
+        glucosa = st.selectbox(
+            "Nivel de glucosa",
+            [1, 2, 3],
+            format_func=lambda x: {
+                1: "Normal",
+                2: "Por encima del promedio",
+                3: "Muy alto"
+            }[x]
+        )
+        alcohol = st.selectbox(
+            "Consume alcohol",
+            [0, 1],
+            format_func=lambda x: "No" if x == 0 else "Sí"
+        )
 
-    actividad = st.selectbox("Actividad física", [0,1])
+    actividad = st.selectbox(
+        "Actividad física",
+        [0, 1],
+        format_func=lambda x: "No" if x == 0 else "Sí"
+    )
 
     predecir = st.button("🔍 Analizar Riesgo", use_container_width=True)
 
